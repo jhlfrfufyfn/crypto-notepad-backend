@@ -1,4 +1,6 @@
 {
-    domain: "localhost",
-    port: 3001
+    port: 3001,
+    jwt: {
+        secret: 'secret'
+    }
 }
