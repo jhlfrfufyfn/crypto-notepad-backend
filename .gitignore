@@ -109,3 +109,5 @@ config/local*.json*
 # Build directory
 build/
 
+# Static directory
+public/

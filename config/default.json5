@@ -2,5 +2,13 @@
     port: 3001,
     jwt: {
         secret: 'secret'
+    },
+    db: {
+        type: "postgres",
+        host: "localhost",
+        port: 5432,
+        username: "jhlfrfufyfn",
+        password: "",
+        database: "kbrs2",
     }
 }
