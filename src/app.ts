@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import jwt from 'jsonwebtoken'; 
 import { appDataSource } from './app-data-source';
 import userRouter from './users/user.routes';
-import { RequestWithUser, userService } from './users/user.service';
+import { authenticateToken, RequestWithUser, userService } from './users/user.service';
 import fileRouter from './files/file.routes';
 import config from 'config';
 
@@ -17,24 +17,7 @@ app.use(cors({ origin: true }));
 app.use('/static', express.static(path.join('..', 'public')));
 
 app.use('/api/auth', userRouter);
-app.use(async function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token === undefined) {
-        return res.sendStatus(401);
-    }
-    jwt.verify(token, config.get('jwt.secret'), async (err, decoded) => {
-        if (!decoded || typeof decoded === 'string' || decoded.userId === undefined) {
-            return res.sendStatus(401);
-        }
-        if (err) {
-            next(err);
-        }
-        const authRecord = await userService.getUserById(decoded.userId);
-        req.user = authRecord;
-        next();
-    });
-});
+app.use(authenticateToken);
 
 app.use('/api/files', fileRouter);
 

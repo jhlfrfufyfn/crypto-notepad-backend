@@ -29,7 +29,7 @@ Create a new file. The request body should contain the following fields:
 #### GET /api/files/:id
 Get a file by id.
 
-#### PUT /api/files/:id
+#### PATCH /api/files/:id
 Update a file by id. The request body should contain the following fields:
 - content
 

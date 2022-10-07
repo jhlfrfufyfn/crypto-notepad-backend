@@ -9,7 +9,24 @@ import { Request, Response, NextFunction } from "express"
 export interface RequestWithUser extends Request {
     user?: User | null
 }
-
+export async function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token === undefined) {
+        return res.sendStatus(401);
+    }
+    jwt.verify(token, config.get('jwt.secret'), async (err, decoded) => {
+        if (!decoded || typeof decoded === 'string' || decoded.userId === undefined) {
+            return res.sendStatus(401);
+        }
+        if (err) {
+            next(err);
+        }
+        const authRecord = await userService.getUserById(decoded.userId);
+        req.user = authRecord;
+        next();
+    });
+}
 class UserService {
     private userRepository: Repository<User>;
     private salt: string;
