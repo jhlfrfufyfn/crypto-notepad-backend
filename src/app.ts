@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: true }));
 app.use('/static', express.static(path.join('..', 'public')));
 
-app.use('/auth', userRouter);
+app.use('/api/auth', userRouter);
 app.use(async function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -36,7 +36,7 @@ app.use(async function authenticateToken(req: RequestWithUser, res: Response, ne
     });
 });
 
-app.use('/files', fileRouter);
+app.use('/api/files', fileRouter);
 
 appDataSource.initialize()
     .then(() => {
