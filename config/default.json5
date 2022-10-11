@@ -6,9 +6,9 @@
     db: {
         type: "postgres",
         host: "localhost",
-        port: 5432,
-        username: "jhlfrfufyfn",
-        password: "",
-        database: "kbrs2",
+        port: 5433,
+        username: "postgres",
+        password: "changeme",
+        database: "postgres",
     }
 }
