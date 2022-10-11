@@ -74,7 +74,7 @@ class FileService {
     async deleteFile(file: File) {
         const filePath = this.getPathToFile(file);
         await fs.unlink(filePath);
-        await this.fileRepository.delete(file);
+        await this.fileRepository.delete(file.id);
     }
 }
 const fileService = new FileService();

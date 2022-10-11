@@ -10,4 +10,10 @@ export class User {
 
     @Column()
     password!: string;
+
+    @Column()
+    publicKey!: string;
+
+    @Column({ type: 'text', nullable: true, default: null })
+    sessionKey?: string | null;
 }

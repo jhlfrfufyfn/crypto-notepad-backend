@@ -4,7 +4,8 @@ import { Repository } from "typeorm";
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import config from 'config';
-import { Request, Response, NextFunction } from "express"
+import { Request, Response, NextFunction } from "express";
+import { encrypt } from 'eciesjs';
 
 export interface RequestWithUser extends Request {
     user?: User | null
@@ -28,6 +29,7 @@ export async function authenticateToken(req: RequestWithUser, res: Response, nex
     });
 }
 class UserService {
+
     private userRepository: Repository<User>;
     private salt: string;
     constructor() {
@@ -35,30 +37,35 @@ class UserService {
         this.salt = config.get('jwt.salt');
     }
 
-    async signup(username: string, password: string): Promise<User> {
+    async signup(username: string, password: string, publicKey: string): Promise<User> {
         if (await this.userRepository.findOneBy({ username })) {
             throw new Error("User already exists");
         }
         const authRecord = new User();
         authRecord.username = username;
         authRecord.password = await this.hashPassword(password);
+        authRecord.publicKey = publicKey;
         return await this.userRepository.save(authRecord);
     }
 
     async login(username: string, password: string) {
-        const authRecord = await this.userRepository.findOneBy({ username });
-        if (!authRecord) {
+        const user = await this.userRepository.findOneBy({ username });
+        if (!user) {
             throw new Error("Username not found");
         }
 
-        if (!(await this.comparePasswords(password, authRecord.password))) {
+        if (!(await this.comparePasswords(password, user.password))) {
             throw new Error("Password is incorrect");
         }
 
-        return this.generateToken(authRecord.id);
+        const sessionKey = this.generateSessionKey();
+        await this.userRepository.update(user.id, { sessionKey });
+
+        const encSessionKey = encrypt(user.publicKey, Buffer.from(sessionKey)).toString('hex');
+        return { token: this.generateToken(user.id), userId: user.id, encSessionKey };
     }
 
-    async generateToken(userId: string) {
+    generateToken(userId: string) {
         return jwt.sign({ userId }, config.get('jwt.secret'), { expiresIn: '1d' });
     }
 
@@ -73,5 +80,23 @@ class UserService {
     async getUserById(userId: string) {
         return await this.userRepository.findOneBy({ id: userId });
     }
+
+    generateSessionKey() {
+        return crypto.randomBytes(64).toString('hex');
+    }
+
+    async encryptText(text: string, sessionKey: string) {
+        const cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(sessionKey), null);
+        const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+        return encrypted.toString('hex');
+    }
+
+    async decryptText(encryptedText: string, sessionKey: string) {
+        const encrypted = Buffer.from(encryptedText, 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(sessionKey), null);
+        const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+        return decrypted.toString();
+    }
+
 }
 export const userService = new UserService();

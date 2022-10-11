@@ -4,9 +4,9 @@ import { userService } from "./user.service";
 const userRouter = express.Router();
 
 userRouter.post("/signup", async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, publicKey } = req.body;
     try {
-        await userService.signup(username, password);
+        await userService.signup(username, password, publicKey);
         res.send({ message: `User ${username} created` });
     } catch (err) {
         if (err instanceof Error) {
@@ -21,9 +21,10 @@ userRouter.post("/signup", async (req, res) => {
 userRouter.post("/login", async (req, res) => {
     const { username, password } = req.body;
     try {
-        const token = await userService.login(username, password);
-        res.send({ token });
+        const loginResponse = await userService.login(username, password);
+        res.send(loginResponse);
     } catch (err) {
+        console.log(err);
         if (err instanceof Error) {
             res.status(400).send(err.message);
         }

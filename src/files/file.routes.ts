@@ -12,7 +12,7 @@ fileRouter.get('/', async (req: RequestWithUser, res) => {
     }
 
     const files = await fileService.getFilesOfUser(userId);
-    res.send(files);
+    res.send({ files });
 });
 
 fileRouter.get('/:id', async (req: RequestWithUser, res) => {
@@ -31,9 +31,15 @@ fileRouter.get('/:id', async (req: RequestWithUser, res) => {
 
     const text = (await fileService.getFileContent(file)).toString();
 
-    /// do sime deciphering here
+    /// do some encrypting here
+    const sessionKey = req.user?.sessionKey;
+    if (!sessionKey) {
+        res.status(401).send('Unauthorized');
+        return;
+    }
 
-    res.send(text);
+    const encryptedText = await userService.encryptText(text, sessionKey);
+    res.send({ content: encryptedText });
 });
 
 fileRouter.post('/', async (req: RequestWithUser, res) => {
@@ -49,7 +55,7 @@ fileRouter.post('/', async (req: RequestWithUser, res) => {
         return;
     }
 
-    if(!req.body.name) {
+    if (!req.body.name) {
         res.status(400).send('File name is required');
         return;
     }
@@ -77,15 +83,21 @@ fileRouter.patch('/:id', async (req: RequestWithUser, res) => {
         return;
     }
 
-    const text = req.body.context;
-    if (!text) {
+    const encryptedText = req.body.context;
+    if (!encryptedText) {
         res.status(400).send('No text provided');
         return;
     }
 
-    /// do sime ciphering here
+    /// do sime decrypting here
+    const sessionKey = req.user?.sessionKey;
+    if (!sessionKey) {
+        res.status(401).send('Unauthorized');
+        return;
+    }
+    const decryptedText = await userService.decryptText(encryptedText, sessionKey);
 
-    await fileService.updateFileContent(file, text as string);
+    await fileService.updateFileContent(file, decryptedText);
     res.send(file);
 });
 
@@ -104,7 +116,7 @@ fileRouter.delete('/:id', async (req: RequestWithUser, res) => {
     }
 
     await fileService.deleteFile(file);
-    res.send('File deleted');
+    res.send({ isDeleted: true });
 });
 
 
