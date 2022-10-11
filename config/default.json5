@@ -11,5 +11,8 @@
         username: "postgres",
         password: "changeme",
         database: "postgres",
+    },
+    file: {
+        secret: 'secret'
     }
 }
