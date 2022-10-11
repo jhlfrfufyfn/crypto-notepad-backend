@@ -44,6 +44,9 @@ class UserService {
         const authRecord = new User();
         authRecord.username = username;
         authRecord.password = await this.hashPassword(password);
+        if (authRecord.publicKey.length < 33) {
+            throw new Error("Invalid public key");
+        }
         authRecord.publicKey = publicKey;
         return await this.userRepository.save(authRecord);
     }
