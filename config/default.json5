@@ -1,7 +1,8 @@
 {
     port: 3001,
     jwt: {
-        secret: 'secret'
+        secret: 'secret',
+        salt: 'salt'
     },
     db: {
         type: "postgres",
