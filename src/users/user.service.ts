@@ -41,14 +41,14 @@ class UserService {
         if (await this.userRepository.findOneBy({ username })) {
             throw new Error("User already exists");
         }
-        const authRecord = new User();
-        authRecord.username = username;
-        authRecord.password = await this.hashPassword(password);
-        if (authRecord.publicKey.length < 33) {
+        const user = new User();
+        user.username = username;
+        user.password = await this.hashPassword(password);
+        if (user.publicKey.length < 33) {
             throw new Error("Invalid public key");
         }
-        authRecord.publicKey = publicKey;
-        return await this.userRepository.save(authRecord);
+        user.publicKey = publicKey;
+        return await this.userRepository.save(user);
     }
 
     async login(username: string, password: string) {
@@ -65,11 +65,11 @@ class UserService {
         await this.userRepository.update(user.id, { sessionKey });
 
         const encSessionKey = encrypt(user.publicKey, Buffer.from(sessionKey)).toString('hex');
-        return { token: this.generateToken(user.id), userId: user.id, encSessionKey };
+        return { token: this.generateToken(user.id, encSessionKey), userId: user.id, encSessionKey };
     }
 
-    generateToken(userId: string) {
-        return jwt.sign({ userId }, config.get('jwt.secret'), { expiresIn: '1d' });
+    generateToken(userId: string, sessionKey: string) {
+        return jwt.sign({ userId, SessionKey }, config.get('jwt.secret'), { expiresIn: '1d' });
     }
 
     async hashPassword(password: string): Promise<string> {
