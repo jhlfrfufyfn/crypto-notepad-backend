@@ -69,7 +69,7 @@ class UserService {
     }
 
     generateToken(userId: string, sessionKey: string) {
-        return jwt.sign({ userId, SessionKey }, config.get('jwt.secret'), { expiresIn: '1d' });
+        return jwt.sign({ userId, sessionKey }, config.get('jwt.secret'), { expiresIn: '1d' });
     }
 
     async hashPassword(password: string): Promise<string> {
