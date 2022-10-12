@@ -11,8 +11,10 @@ import { File } from "./file.entity";
 
 class FileService {
     private readonly fileRepository: Repository<File>;
+    private readonly iv: Buffer;
     constructor() {
         this.fileRepository = appDataSource.getRepository(File);
+        this.iv = crypto.randomBytes(16);
     }
 
     private getPathToFile(file: File) {
@@ -72,7 +74,7 @@ class FileService {
     async encrypt(text: string) {
         console.log(1);
         console.log(Buffer.from(config.get('file.secret')).length);
-        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), crypto.randomBytes(16));
+        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), this.iv);
         console.log(2);
         let encrypted = cipher.update(text);
         console.log(3);
@@ -83,7 +85,7 @@ class FileService {
 
     async decrypt(text: string) {
         let encryptedText = Buffer.from(text, 'hex');
-        let decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), crypto.randomBytes(16));
+        let decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), this.iv);
         let decrypted = decipher.update(encryptedText);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();

@@ -32,9 +32,11 @@ class UserService {
 
     private userRepository: Repository<User>;
     private salt: string;
+    private iv: Buffer;
     constructor() {
         this.userRepository = appDataSource.getRepository(User);
         this.salt = config.get('jwt.salt');
+        this.iv = crypto.randomBytes(16);
     }
 
     async signup(username: string, password: string, publicKey: string): Promise<User> {
@@ -89,14 +91,14 @@ class UserService {
     }
 
     async encryptText(text: string, sessionKey: string) {
-        const cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(sessionKey), null);
+        const cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(sessionKey), this.iv);
         const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
         return encrypted.toString('hex');
     }
 
     async decryptText(encryptedText: string, sessionKey: string) {
         const encrypted = Buffer.from(encryptedText, 'hex');
-        const decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(sessionKey), null);
+        const decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(sessionKey), this.iv);
         const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
         return decrypted.toString();
     }
