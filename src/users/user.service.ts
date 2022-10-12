@@ -87,18 +87,18 @@ class UserService {
     }
 
     generateSessionKey() {
-        return crypto.randomBytes(64).toString('hex');
+        return crypto.randomBytes(32).toString('hex');
     }
 
     async encryptText(text: string, sessionKey: string) {
-        const cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(sessionKey), this.iv);
+        const cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(sessionKey, 'hex'), this.iv);
         const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
         return encrypted.toString('hex');
     }
 
     async decryptText(encryptedText: string, sessionKey: string) {
         const encrypted = Buffer.from(encryptedText, 'hex');
-        const decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(sessionKey), this.iv);
+        const decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(sessionKey, 'hex'), this.iv);
         const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
         return decrypted.toString();
     }

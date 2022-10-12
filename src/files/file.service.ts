@@ -74,7 +74,8 @@ class FileService {
     async encrypt(text: string) {
         console.log(1);
         console.log(Buffer.from(config.get('file.secret')).length);
-        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), this.iv);
+        const fileSecret: string = config.get('file.secret');
+        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(fileSecret, 'hex'), this.iv);
         console.log(2);
         let encrypted = cipher.update(text);
         console.log(3);
