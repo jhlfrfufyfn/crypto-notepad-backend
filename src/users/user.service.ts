@@ -44,7 +44,7 @@ class UserService {
         const user = new User();
         user.username = username;
         user.password = await this.hashPassword(password);
-        if (user.publicKey.length < 33) {
+        if (publicKey.length < 33) {
             throw new Error("Invalid public key");
         }
         user.publicKey = publicKey;

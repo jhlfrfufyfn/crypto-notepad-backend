@@ -70,15 +70,20 @@ class FileService {
     }
 
     async encrypt(text: string) {
-        let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(config.get('file.secret')), null);
+        console.log(1);
+        console.log(Buffer.from(config.get('file.secret')).length);
+        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), crypto.randomBytes(16));
+        console.log(2);
         let encrypted = cipher.update(text);
+        console.log(3);
         encrypted = Buffer.concat([encrypted, cipher.final()]);
+        console.log(4);
         return encrypted.toString('hex');
     }
 
     async decrypt(text: string) {
         let encryptedText = Buffer.from(text, 'hex');
-        let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.get('file.secret')), null);
+        let decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(config.get('file.secret')), crypto.randomBytes(16));
         let decrypted = decipher.update(encryptedText);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();

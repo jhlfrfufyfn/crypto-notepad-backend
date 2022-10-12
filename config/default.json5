@@ -13,6 +13,6 @@
         database: "postgres",
     },
     file: {
-        secret: 'secret'
+        secret: 'thisisthreetwoortwofivesixsecret'
     }
 }

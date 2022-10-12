@@ -12,6 +12,7 @@ fileRouter.get('/', async (req: RequestWithUser, res) => {
     }
 
     const files = await fileService.getFilesOfUser(userId);
+    console.log("filse: ", files);
     res.send({ files });
 });
 
@@ -28,6 +29,8 @@ fileRouter.get('/:id', async (req: RequestWithUser, res) => {
         res.status(404).send('File not found');
         return;
     }
+
+    console.log("file: ", file);
 
     const text = (await fileService.getFileContent(file)).toString();
 
