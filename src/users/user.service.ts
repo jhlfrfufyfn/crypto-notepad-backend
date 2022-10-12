@@ -29,10 +29,9 @@ export async function authenticateToken(req: RequestWithUser, res: Response, nex
     });
 }
 class UserService {
-
     private userRepository: Repository<User>;
     private salt: string;
-    private iv: Buffer;
+    public iv: Buffer;
     constructor() {
         this.userRepository = appDataSource.getRepository(User);
         this.salt = config.get('jwt.salt');
@@ -67,7 +66,7 @@ class UserService {
         await this.userRepository.update(user.id, { sessionKey });
 
         const encSessionKey = encrypt(user.publicKey, Buffer.from(sessionKey)).toString('hex');
-        return { token: this.generateToken(user.id, encSessionKey), userId: user.id, encSessionKey };
+        return { token: this.generateToken(user.id, encSessionKey), userId: user.id, encSessionKey, iv: this.iv.toString('hex') };
     }
 
     generateToken(userId: string, sessionKey: string) {
