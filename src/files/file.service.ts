@@ -43,7 +43,7 @@ class FileService {
 
     async getFileContent(file: File) {
         let text = await fs.readFile(this.getPathToFile(file), "utf-8");
-        text = await this.decrypt(text)
+        ///text = await this.decrypt(text)
         return text;
     }
 
@@ -86,7 +86,7 @@ class FileService {
 
     async updateFileContent(file: File, text: string) {
         const filePath = this.getPathToFile(file);
-        text = await this.encrypt(text);
+        ///text = await this.encrypt(text);
         await fs.writeFile(filePath, text, "utf-8");
     }
 
