@@ -42,10 +42,9 @@ class FileService {
         );
     }
 
-
     async getFileContent(file: File) {
         let text = await fs.readFile(this.getPathToFile(file), "utf-8");
-        ///text = await this.decrypt(text)
+        text = await this.decrypt(text)
         return text;
     }
 
@@ -73,7 +72,8 @@ class FileService {
 
     async encrypt(text: string) {
         const fileSecret: string = config.get('file.secret');
-        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(fileSecret, 'hex'), this.iv);
+        // console.log(Buffer.from(fileSecret, 'hex').toString())
+        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(fileSecret), this.iv);
         let encrypted = cipher.update(text);
         encrypted = Buffer.concat([encrypted, cipher.final()]);
         return encrypted.toString('hex');
@@ -82,7 +82,7 @@ class FileService {
     async decrypt(text: string) {
         let encryptedText = Buffer.from(text, 'hex');
         const fileSecret: string = config.get('file.secret');
-        let decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(fileSecret, 'hex'), this.iv);
+        let decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(fileSecret), this.iv);
         let decrypted = decipher.update(encryptedText);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();
@@ -90,7 +90,7 @@ class FileService {
 
     async updateFileContent(file: File, text: string) {
         const filePath = this.getPathToFile(file);
-        ///text = await this.encrypt(text);
+        text = await this.encrypt(text);
         await fs.writeFile(filePath, text, "utf-8");
     }
 
