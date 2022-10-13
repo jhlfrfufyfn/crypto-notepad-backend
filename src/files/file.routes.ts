@@ -12,6 +12,7 @@ fileRouter.get('/', async (req: RequestWithUser, res) => {
     }
 
     const files = await fileService.getFilesOfUser(userId);
+    // console.log("filse: ", files);
     res.send({ files });
 });
 
@@ -28,6 +29,8 @@ fileRouter.get('/:id', async (req: RequestWithUser, res) => {
         res.status(404).send('File not found');
         return;
     }
+
+    // console.log("file: ", file);
 
     const text = (await fileService.getFileContent(file)).toString();
 
@@ -65,25 +68,27 @@ fileRouter.post('/', async (req: RequestWithUser, res) => {
 fileRouter.patch('/:id', async (req: RequestWithUser, res) => {
     const userId = req.user?.id;
     const fileId = req.params.id;
-    console.count();
-    console.log(fileId + ' ' + userId);
+
     if (!userId) {
         res.status(401).send('Unauthorized');
         return;
     }
-    console.count();
+
     if (!fileId) {
         res.status(400).send('File id is required');
         return;
     }
-    console.count();
+    
+    
     const file = await fileService.getFile(userId, fileId);
     if (!file) {
         res.status(404).send('File not found');
         return;
     }
 
-    const encryptedText = req.body.context;
+    console.log('req.body: ', req.body);
+
+    const encryptedText = req.body.content;
     if (!encryptedText) {
         res.status(400).send('No text provided');
         return;
@@ -96,6 +101,7 @@ fileRouter.patch('/:id', async (req: RequestWithUser, res) => {
         return;
     }
     const decryptedText = await userService.decryptText(encryptedText, sessionKey);
+    console.log("decrypted text: ", decryptedText);
 
     await fileService.updateFileContent(file, decryptedText);
     res.send(file);

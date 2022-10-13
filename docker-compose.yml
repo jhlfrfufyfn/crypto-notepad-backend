@@ -1,41 +1,37 @@
 version: '3.5'
 
 services:
+  crypto-notepad-back:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crypto-notepad-back
+    container_name: crypto-notepad-back
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - 3001:3001
+    environment:
+      - NODE_ENV=production
+
   postgres:
-    container_name: postgres_container
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      PGDATA: /data/postgres
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
        - postgres:/data/postgres
     ports:
       - "5433:5432"
-    networks:
-      - postgres
     restart: unless-stopped
-  
-  # pgadmin:
-  #   container_name: pgadmin_container
-  #   image: dpage/pgadmin4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
-  #   volumes:
-  #      - pgadmin:/var/lib/pgadmin
-
-  #   ports:
-  #     - "${PGADMIN_PORT:-5050}:80"
-  #   networks:
-  #     - postgres
-  #   restart: unless-stopped
-
-networks:
-  postgres:
-    driver: bridge
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+ 
 volumes:
     postgres:
-    pgadmin:

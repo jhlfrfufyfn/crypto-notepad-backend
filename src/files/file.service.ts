@@ -11,8 +11,10 @@ import { File } from "./file.entity";
 
 class FileService {
     private readonly fileRepository: Repository<File>;
+    private readonly iv: Buffer;
     constructor() {
         this.fileRepository = appDataSource.getRepository(File);
+        this.iv = crypto.randomBytes(16);
     }
 
     private getPathToFile(file: File) {
@@ -39,7 +41,6 @@ class FileService {
                 .getOne()
         );
     }
-
 
     async getFileContent(file: File) {
         let text = await fs.readFile(this.getPathToFile(file), "utf-8");
@@ -70,7 +71,9 @@ class FileService {
     }
 
     async encrypt(text: string) {
-        let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(config.get('file.secret')), null);
+        const fileSecret: string = config.get('file.secret');
+        // console.log(Buffer.from(fileSecret, 'hex').toString())
+        let cipher = crypto.createCipheriv('aes-256-cfb', Buffer.from(fileSecret), this.iv);
         let encrypted = cipher.update(text);
         encrypted = Buffer.concat([encrypted, cipher.final()]);
         return encrypted.toString('hex');
@@ -78,7 +81,8 @@ class FileService {
 
     async decrypt(text: string) {
         let encryptedText = Buffer.from(text, 'hex');
-        let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.get('file.secret')), null);
+        const fileSecret: string = config.get('file.secret');
+        let decipher = crypto.createDecipheriv('aes-256-cfb', Buffer.from(fileSecret), this.iv);
         let decrypted = decipher.update(encryptedText);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();

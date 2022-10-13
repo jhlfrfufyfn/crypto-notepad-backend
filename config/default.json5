@@ -6,13 +6,13 @@
     },
     db: {
         type: "postgres",
-        host: "localhost",
-        port: 5433,
+        host: "postgres",
+        port: 5432,
         username: "postgres",
         password: "changeme",
         database: "postgres",
     },
     file: {
-        secret: 'secret'
+        secret: 'thisisthreetwoortwofivesixsecret'
     }
 }

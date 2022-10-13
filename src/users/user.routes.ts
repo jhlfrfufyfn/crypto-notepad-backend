@@ -10,6 +10,7 @@ userRouter.post("/signup", async (req, res) => {
         res.send({ message: `User ${username} created` });
     } catch (err) {
         if (err instanceof Error) {
+            // res.status(400).send(req.body);
             res.status(400).send(err.message);
         }
         else {
