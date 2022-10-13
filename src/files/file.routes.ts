@@ -101,6 +101,7 @@ fileRouter.patch('/:id', async (req: RequestWithUser, res) => {
         return;
     }
     const decryptedText = await userService.decryptText(encryptedText, sessionKey);
+    console.log("decrypted text: ", decryptedText);
 
     await fileService.updateFileContent(file, decryptedText);
     res.send(file);
